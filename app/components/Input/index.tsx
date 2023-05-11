@@ -7,7 +7,13 @@ type InputRef = React.Ref<HTMLInputElement>
 
 const Input = React.forwardRef(({ label, className, ...props}: InputProps, ref: InputRef) => {
   return (
-    <label className="grid font-bold">
+    <label 
+      className={`
+        grid 
+        font-bold
+        ${props.disabled && 'opacity-50'}
+      `}
+      >
       {label}
       <input 
         ref={ref}
@@ -23,6 +29,9 @@ const Input = React.forwardRef(({ label, className, ...props}: InputProps, ref: 
           hover:border-blue-500
           focus:border-blue-700
           focus:text-blue-600
+          disabled:opacity-50
+          disabled:pointer-events-none
+          disabled:hover:border-gray-300
           transition-all
           duration-300
           ${className}
