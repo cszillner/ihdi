@@ -2,7 +2,7 @@ import { Form, Link, useActionData } from '@remix-run/react';
 import { type ActionArgs, json } from "@remix-run/node"
 
 import logo from '../images/logo.svg'
-import { Input, Message } from '~/components';
+import { Button, Input, Message } from '~/components';
 
 // Form data type
 type FormData = {
@@ -108,30 +108,12 @@ export default function () {
             label="E-mail"
             type="email"
             name="email"
+            defaultValue={actionData?.data.email}
           />
 
           {/* Botão de envio do formulário */}
-          <button 
-            className="
-              px-4
-              py-2
-              outline-none
-              border-2
-              border-blue-500
-              rounded
-              text-white
-              font-bold
-              text-lg
-              bg-blue-500
-              hover:bg-blue-600
-              active:bg-blue-700
-              focus:border-blue-700
-              transition-all
-              duration-300
-            "
-          >
-            Solicitar nova senha
-          </button>
+          <Button>Solicitar nova senha</Button>
+
         </Form>
 
         {/* Link de esqueci minha senha */}

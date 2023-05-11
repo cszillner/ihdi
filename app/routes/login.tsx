@@ -2,7 +2,7 @@ import { type ActionArgs, redirect, json } from "@remix-run/node"
 import { Form, Link, useActionData } from "@remix-run/react"
 
 import logo from '../images/logo.svg'
-import { Input, Message } from "~/components"
+import { Button, Input, Message } from "~/components"
 
 // Form data type
 type FormData = {
@@ -126,27 +126,7 @@ export default function Login() {
         />
 
         {/* Botão de envio do formulário */}
-        <button 
-          className="
-            px-4
-            py-2
-            outline-none
-            border-2
-            border-blue-500
-            rounded
-            text-white
-            font-bold
-            text-lg
-            bg-blue-500
-            hover:bg-blue-600
-            active:bg-blue-700
-            focus:border-blue-700
-            transition-all
-            duration-300
-          "
-        >
-          Entrar
-        </button>
+        <Button>Entrar</Button>
 
       </Form>
 
