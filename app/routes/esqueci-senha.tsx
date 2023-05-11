@@ -1,21 +1,20 @@
 import { Form, Link, useActionData } from '@remix-run/react';
-import { type ActionArgs, redirect, json } from "@remix-run/node"
+import { type ActionArgs, json } from "@remix-run/node"
 
 import logo from '../images/logo.svg'
-import { useEffect, useRef } from 'react';
+import { Message } from '~/components';
 
 // Form data type
 type FormData = {
-  cleanError: string
+  cleanMessage: string
   email: string
 }
 
 export async function action({ request }: ActionArgs) {
   const formData = await request.formData();
-  const { cleanError, email } = Object.fromEntries(formData) as FormData
+  const { cleanMessage, email } = Object.fromEntries(formData) as FormData
   
-  // Utilizado para limpar os erros do formulário
-  if (cleanError) {
+  if (cleanMessage) {
     return json({
       error: '',
       success: '',
@@ -45,7 +44,7 @@ export async function action({ request }: ActionArgs) {
       error: 'E-mail não cadastrado. Favor entrar em contato com o Administrador.',
       success: '',
       data: {
-        email,
+        email
       }
     }, {
       status: 404
@@ -62,73 +61,19 @@ export async function action({ request }: ActionArgs) {
 };
 
 export default function () {
-  const clearMessageButtonRef = useRef<HTMLButtonElement | null>(null)
   const actionData = useActionData<typeof action>()
-  
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      if (actionData?.success || actionData?.error) {
-        clearMessageButtonRef.current?.click()
-      }
-    }, 3000);
-
-    return () => clearTimeout(handler)
-  }, [actionData?.success, actionData?.error])
 
   return (
     <main className="flex justify-center items-center h-screen relative">
 
-      {/* Mensagem de erro */}
-      <Form method="POST">
-        <div 
-          className={`
-            flex
-            justify-between
-            items-baseline
-            fixed
-            w-full
-            left-0
-            p-2
-            md:p-3
-            border-t-2
-            font-bold
-            text-md
-            md:text-lg
-            text-center
-            transition-all
-            duration-300
-            ease-in-out
-
-            ${actionData?.success || actionData?.error ? 'bottom-0 visible opacity-100' : '-bottom-10 invisible opacity-0'}
-            ${actionData?.success && 'bg-green-300 border-green-600 text-green-800'}
-            ${actionData?.error && 'bg-red-300 border-red-600 text-red-800'}
-          `}
-        >
-          <span className="inline-block text-center">{actionData?.success || actionData?.error}</span>
-
-          <button 
-            ref={clearMessageButtonRef} 
-            name="cleanError" 
-            value="true"
-            className={`
-              self-start
-              flex
-              justify-center
-              items-center
-              w-6
-              h-6
-              p-1
-              rounded-full
-              ${actionData?.success && 'hover:bg-green-900 hover:text-green-300'}
-              ${actionData?.error && 'hover:bg-red-900 hover:text-red-300'}
-            `}
-          >
-            X
-          </button>
-          
-          <input type="hidden" name="email" defaultValue={actionData?.data.email} />
-        </div>
-      </Form>
+      <Message 
+        autoClose={2000}
+        success={actionData?.success}
+        error={actionData?.error}
+        fields={[
+          {name: 'email', value: actionData?.data.email}
+        ]}
+      />
 
       <div className="grid gap-6 px-4 w-full md:w-[400px]">
 
@@ -156,7 +101,7 @@ export default function () {
         </h1>
 
         {/* Formulário */}
-        <Form method="POST" className="grid gap-4">
+        <Form method="POST" key={actionData?.data.email ?? 'new'}  className="grid gap-4">
 
           {/* Campo de email */}
           <label className="grid font-bold">

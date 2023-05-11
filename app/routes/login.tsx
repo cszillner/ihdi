@@ -1,12 +1,12 @@
-import { useEffect, useRef } from "react"
 import { type ActionArgs, redirect, json } from "@remix-run/node"
 import { Form, Link, useActionData } from "@remix-run/react"
 
 import logo from '../images/logo.svg'
+import { Message } from "~/components"
 
 // Form data type
 type FormData = {
-  cleanError: string
+  cleanMessage: string
   email: string
   password: string
 }
@@ -18,10 +18,9 @@ type FormData = {
  */
 export async function action({ request }: ActionArgs) {
   const formData = await request.formData();
-  const { cleanError, email, password } = Object.fromEntries(formData) as FormData
+  const { cleanMessage, email, password } = Object.fromEntries(formData) as FormData
 
-  // Utilizado para limpar os erros do formulário
-  if (cleanError) {
+  if (cleanMessage) {
     return json({
       error: '',
       success: '',
@@ -69,77 +68,22 @@ export async function action({ request }: ActionArgs) {
  * @returns JXS
  */
 export default function Login() {
-  const clearErrorRef = useRef<HTMLButtonElement | null>(null)
   const actionData = useActionData<typeof action>()
-
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      if (actionData?.error) {
-        clearErrorRef.current?.click()
-      }
-    }, 3000);
-
-    return () => clearTimeout(handler)
-  }, [actionData?.error])
 
   return <main className="flex justify-center items-center h-screen relative">
 
-    {/* Mensagem de erro */}
-    <Form method="POST">
-      <div 
-        className={`
-          flex
-          justify-between
-          items-baseline
-          fixed
-          w-full
-          left-0
-          p-2
-          md:p-3
-          border-t-2
-          font-bold
-          text-md
-          md:text-lg
-          text-center
-          transition-all
-          duration-300
-          ease-in-out
+    <Message 
+      autoClose={2000}
+      success={actionData?.success}
+      error={actionData?.error}
+      fields={[
+        {name: 'email', value: actionData?.data.email},
+        {name: 'password', value: actionData?.data.password}
+      ]}
+    />
 
-          ${actionData?.success || actionData?.error ? 'bottom-0 visible opacity-100' : '-bottom-10 invisible opacity-0'}
-          ${actionData?.success && 'bg-green-300 border-green-600 text-green-800'}
-          ${actionData?.error && 'bg-red-300 border-red-600 text-red-800'}
-        `}
-      >
-        <span className="inline-block text-center">{actionData?.success || actionData?.error}</span>
-
-        <button 
-          ref={clearErrorRef} 
-          name="cleanError" 
-          value="true"
-          className={`
-            self-start
-            flex
-            justify-center
-            items-center
-            w-6
-            h-6
-            p-1
-            rounded-full
-            ${actionData?.success && 'hover:bg-green-900 hover:text-green-300'}
-            ${actionData?.error && 'hover:bg-red-900 hover:text-red-300'}
-          `}
-        >
-          X
-        </button>
-        
-        <input type="hidden" name="email" defaultValue={actionData?.data.email} />
-        <input type="hidden" name="password" defaultValue={actionData?.data.password} />
-      </div>
-    </Form>
-
-
-  {/* Container com todos os elementos menos a mensagem de erro */}
-   <div className="grid gap-6 px-4 w-full md:w-[400px]">
+    {/* Container com todos os elementos menos a mensagem de erro */}
+    <div className="grid gap-6 px-4 w-full md:w-[400px]">
       
       {/* Logotipo */}
       <img 
@@ -174,7 +118,6 @@ export default function Login() {
             type="email" 
             name="email" 
             id="email"
-            defaultValue={actionData?.data.email}
             className="
               px-4
               py-2
@@ -200,7 +143,6 @@ export default function Login() {
             type="password" 
             name="password" 
             id="password" 
-            defaultValue={actionData?.data.password}
             className="
               px-4
               py-2
