@@ -2,7 +2,7 @@ import { type ActionArgs, redirect, json } from "@remix-run/node"
 import { Form, Link, useActionData } from "@remix-run/react"
 
 import logo from '../images/logo.svg'
-import { Message } from "~/components"
+import { Input, Message } from "~/components"
 
 // Form data type
 type FormData = {
@@ -112,54 +112,18 @@ export default function Login() {
       <Form method="POST" className="grid gap-4">
 
         {/* Campo de email */}
-        <label className="grid font-bold">
-          E-mail:
-          <input 
-            type="email" 
-            name="email" 
-            id="email"
-            className="
-              px-4
-              py-2
-              outline-none
-              rounded
-              border-2
-              border-gray-300
-              font-normal
-              text-lg
-              hover:border-blue-500
-              focus:border-blue-700
-              focus:text-blue-600
-              transition-all
-              duration-300
-            "
-          />
-        </label>
+        <Input 
+          label="E-mail"
+          type="email"
+          name="email"
+        />
 
         {/* Campo de senha */}
-        <label className="grid font-bold">
-          Senha:
-          <input 
-            type="password" 
-            name="password" 
-            id="password" 
-            className="
-              px-4
-              py-2
-              outline-none
-              rounded
-              border-2
-              border-gray-300
-              font-normal
-              text-lg
-              hover:border-blue-500
-              focus:border-blue-700
-              focus:text-blue-600
-              transition-all
-              duration-300
-            "
-          />
-        </label>
+        <Input 
+          label="Senha"
+          type="password"
+          name="password"
+        />
 
         {/* Botão de envio do formulário */}
         <button 
