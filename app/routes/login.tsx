@@ -109,13 +109,14 @@ export default function Login() {
       </h1>
 
       {/* Formulário */}
-      <Form method="POST" className="grid gap-4">
+      <Form method="POST" key={actionData?.data.email ?? 'new'} className="grid gap-4">
 
         {/* Campo de email */}
         <Input 
           label="E-mail"
           type="email"
           name="email"
+          defaultValue={actionData?.data.email}
         />
 
         {/* Campo de senha */}
@@ -123,6 +124,7 @@ export default function Login() {
           label="Senha"
           type="password"
           name="password"
+          defaultValue={actionData?.data.password}
         />
 
         {/* Botão de envio do formulário */}
