@@ -201,7 +201,7 @@ export default function Login() {
             type="password" 
             name="password" 
             id="password" 
-            defaultValue={actionData?.data.email}
+            defaultValue={actionData?.data.password}
             className="
               px-4
               py-2
