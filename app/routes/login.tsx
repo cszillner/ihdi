@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react"
 import { type ActionArgs, redirect, json } from "@remix-run/node"
-import { Form, useActionData } from "@remix-run/react"
+import { Form, Link, useActionData } from "@remix-run/react"
 
 import logo from '../images/logo.svg'
 
@@ -24,6 +24,7 @@ export async function action({ request }: ActionArgs) {
   if (cleanError) {
     return json({
       error: '',
+      success: '',
       data: {
         email,
         password
@@ -36,6 +37,7 @@ export async function action({ request }: ActionArgs) {
   if (!email || !password) {
     return json({
       error: 'As informações para login são necessárias',
+      success: '',
       data: {
         email,
         password
@@ -49,6 +51,7 @@ export async function action({ request }: ActionArgs) {
   if (email !== 'email@email.com' || password !== '123456') {
     return json({
       error: 'E-mail ou senha inválidos',
+      success: '',
       data: {
         email,
         password
@@ -89,14 +92,11 @@ export default function Login() {
           justify-between
           items-baseline
           fixed
-          bg-red-300
           w-full
           left-0
           p-2
           md:p-3
           border-t-2
-          border-red-600
-          text-red-800
           font-bold
           text-md
           md:text-lg
@@ -105,19 +105,18 @@ export default function Login() {
           duration-300
           ease-in-out
 
-          ${actionData?.error 
-            ? 'bottom-0 visible opacity-100' 
-            : '-bottom-10 invisible opacity-0'
-          }
+          ${actionData?.success || actionData?.error ? 'bottom-0 visible opacity-100' : '-bottom-10 invisible opacity-0'}
+          ${actionData?.success && 'bg-green-300 border-green-600 text-green-800'}
+          ${actionData?.error && 'bg-red-300 border-red-600 text-red-800'}
         `}
       >
-        <span className="inline-block text-center">{actionData?.error}</span>
+        <span className="inline-block text-center">{actionData?.success || actionData?.error}</span>
 
         <button 
           ref={clearErrorRef} 
           name="cleanError" 
           value="true"
-          className="
+          className={`
             self-start
             flex
             justify-center
@@ -126,9 +125,9 @@ export default function Login() {
             h-6
             p-1
             rounded-full
-            hover:bg-red-900
-            hover:text-red-300
-          "
+            ${actionData?.success && 'hover:bg-green-900 hover:text-green-300'}
+            ${actionData?.error && 'hover:bg-red-900 hover:text-red-300'}
+          `}
         >
           X
         </button>
@@ -140,7 +139,7 @@ export default function Login() {
 
 
   {/* Container com todos os elementos menos a mensagem de erro */}
-   <div className="grid gap-6 px-4">
+   <div className="grid gap-6 px-4 w-full md:w-[400px]">
       
       {/* Logotipo */}
       <img 
@@ -246,8 +245,8 @@ export default function Login() {
       </Form>
 
       {/* Link de esqueci minha senha */}
-      <a 
-        href="/login"
+      <Link 
+        to="/esqueci-senha"
         className="
           justify-self-center
           text-blue-500
@@ -255,7 +254,7 @@ export default function Login() {
         "
       >
         Esqueci minha senha
-      </a>
+      </Link>
         
     </div>
   </main>
