@@ -1,15 +1,41 @@
 import { type ActionArgs, redirect, json } from "@remix-run/node"
-import { Form, Link, useActionData } from "@remix-run/react"
+import { Link, useActionData } from "@remix-run/react"
 
 import logo from '../images/logo.svg'
 import { Input, Message } from "~/components"
+import { z } from "zod"
+import { makeDomainFunction } from "domain-functions"
+import { Form } from "~/form"
+import { performMutation } from "remix-forms"
 
-// Form data type
-type FormData = {
-  cleanMessage: string
-  email: string
-  password: string
-}
+/**
+ * Form validation schema
+ */
+const schema = z.object({
+  cleanMessage: z.string(),
+  email: z.string().min(1, { message: 'Informe o email'}).email({ message: 'Informe um e-mail válido'}).trim(),
+  password: z.string().min(1, { message: 'Informe a senha'}).trim()
+})
+
+/**
+ * Login function, receives data from form and validate credentials
+ */
+const loginMutation = makeDomainFunction(schema)(async (data) => { 
+  const { cleanMessage, email, password } = data
+  
+  if (cleanMessage) {
+    return data
+  }
+
+  // TODO: Fazer a validação do login nesse ponto (acessar o banco de dados ou uma API)
+
+  // if user is not valid, return a error action
+  if (email !== 'email@email.com' || password !== '123456') {
+    throw 'E-mail ou senha inválidos'
+  }
+
+  return data
+})
 
 /**
  * Action Function
@@ -17,8 +43,27 @@ type FormData = {
  * @returns data object or redirect
  */
 export async function action({ request }: ActionArgs) {
-  const formData = await request.formData();
-  const { cleanMessage, email, password } = Object.fromEntries(formData) as FormData
+  const result = await performMutation({
+    request,
+    schema,
+    mutation: loginMutation
+  })
+
+  if (!result.success) {
+    const globalErrors = result.errors._global ?? ['Erro ao efetuar o login. Tente novamente mais tarde.']    
+    const { email, password } = result.values
+
+    return json({
+      error: globalErrors[0],
+      success: '',
+      data: {
+        email,
+        password
+      }
+    })
+  }
+  
+  const { cleanMessage, email, password } = result.data
 
   if (cleanMessage) {
     return json({
@@ -28,39 +73,10 @@ export async function action({ request }: ActionArgs) {
         email,
         password
       }
-    }, {
-      status: 200
     })
   }
 
-  if (!email || !password) {
-    return json({
-      error: 'As informações para login são necessárias',
-      success: '',
-      data: {
-        email,
-        password
-      }
-    }, {
-      status: 400
-    })
-  }
-
-  // TODO: Validar contra as informações vindas do banco de dados
-  if (email !== 'email@email.com' || password !== '123456') {
-    return json({
-      error: 'E-mail ou senha inválidos',
-      success: '',
-      data: {
-        email,
-        password
-      }
-    }, {
-      status: 401
-    })
-  }
-  
-  return redirect('/login');
+  return redirect('/')
 };
 
 /**
@@ -70,100 +86,109 @@ export async function action({ request }: ActionArgs) {
 export default function Login() {
   const actionData = useActionData<typeof action>()
 
-  return <main className="flex justify-center items-center h-screen relative">
+  return (
+    <main className="flex justify-center items-center h-screen relative">
 
-    <Message 
-      autoClose={2000}
-      success={actionData?.success}
-      error={actionData?.error}
-      fields={[
-        {name: 'email', value: actionData?.data.email},
-        {name: 'password', value: actionData?.data.password}
-      ]}
-    />
-
-    {/* Container com todos os elementos menos a mensagem de erro */}
-    <div className="grid gap-6 px-4 w-full md:w-[400px]">
-      
-      {/* Logotipo */}
-      <img 
-        src={logo} 
-        alt="IHDI Logo" 
-        className="
-          w-40
-          md:w-auto
-          justify-self-center
-        "
+      <Message 
+        autoClose={2000}
+        success={actionData?.success}
+        error={actionData?.error}
+        fields={[
+          {name: 'email', value: actionData?.data.email},
+          {name: 'password', value: actionData?.data.password}
+        ]}
       />
 
-      {/* Título */}
-      <h1 
-        className="
-          justify-self-center
-          text-3xl
-          font-bold
-          text-center
-        "
-      >
-        Processamento de Pagamentos
-      </h1>
-
-      {/* Formulário */}
-      <Form method="POST" key={actionData?.data.email ?? 'new'} className="grid gap-4">
-
-        {/* Campo de email */}
-        <Input 
-          label="E-mail"
-          type="email"
-          name="email"
-          defaultValue={actionData?.data.email}
-        />
-
-        {/* Campo de senha */}
-        <Input 
-          label="Senha"
-          type="password"
-          name="password"
-          defaultValue={actionData?.data.password}
-        />
-
-        {/* Botão de envio do formulário */}
-        <button 
+      {/* Container com todos os elementos menos a mensagem de erro */}
+      <div className="grid gap-6 px-4 w-full md:w-[400px]">
+        
+        {/* Logotipo */}
+        <img 
+          src={logo} 
+          alt="IHDI Logo" 
           className="
-            px-4
-            py-2
-            outline-none
-            border-2
-            border-blue-500
-            rounded
-            text-white
+            w-40
+            md:w-auto
+            justify-self-center
+          "
+        />
+
+        {/* Título */}
+        <h1 
+          className="
+            justify-self-center
+            text-3xl
             font-bold
-            text-lg
-            bg-blue-500
-            hover:bg-blue-600
-            active:bg-blue-700
-            focus:border-blue-700
-            transition-all
-            duration-300
+            text-center
           "
         >
-          Entrar
-        </button>
+          Processamento de Pagamentos
+        </h1>
 
-      </Form>
+        {/* Formulário */}
+        <Form schema={schema} className="grid gap-4">
+          {({ Field, register }) => (
+            <>
+              <Field name="email">
+                {({ errors }) => (
+                  <Input 
+                    label="E-mail"
+                    type="email"
+                    error={errors && errors[0]}
+                    { ...register('email') }
+                  />
+                )}
+              </Field>
 
-      {/* Link de esqueci minha senha */}
-      <Link 
-        to="/esqueci-senha"
-        className="
-          justify-self-center
-          text-blue-500
-          hover:underline
-        "
-      >
-        Esqueci minha senha
-      </Link>
-        
-    </div>
-  </main>
+              <Field name="password">
+                {({ errors }) => (
+                  <Input 
+                    label="Senha"
+                    type="password"
+                    error={errors && errors[0]}
+                    { ...register('password') }
+                  />
+                )}
+              </Field>
+
+              <button 
+                className="
+                  px-4
+                  py-2
+                  outline-none
+                  border-2
+                  border-blue-500
+                  rounded
+                  text-white
+                  font-bold
+                  text-lg
+                  bg-blue-500
+                  hover:bg-blue-600
+                  active:bg-blue-700
+                  focus:border-blue-700
+                  disabled:opacity-50
+                  transition-all
+                  duration-300
+                "
+              >
+                Entrar
+              </button>
+            </>
+          )}
+        </Form>
+
+        {/* Link de esqueci minha senha */}
+        <Link 
+          to="/esqueci-senha"
+          className="
+            justify-self-center
+            text-blue-500
+            hover:underline
+          "
+        >
+          Esqueci minha senha
+        </Link>        
+      </div>
+    </main>
+  )
 }
