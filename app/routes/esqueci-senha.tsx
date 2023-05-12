@@ -1,7 +1,7 @@
 import { Form, Link, useActionData } from '@remix-run/react';
 import { type ActionArgs, json } from "@remix-run/node"
 
-import { Button, Input, Logo, Message } from '~/components';
+import { Button, Input, Logo, Message, Title } from '~/components';
 
 // Form data type
 type FormData = {
@@ -9,6 +9,11 @@ type FormData = {
   email: string
 }
 
+/**
+ * Action function
+ * @param param0 
+ * @returns data object
+ */
 export async function action({ request }: ActionArgs) {
   const formData = await request.formData();
   const { cleanMessage, email } = Object.fromEntries(formData) as FormData
@@ -59,12 +64,15 @@ export async function action({ request }: ActionArgs) {
   })
 };
 
+/**
+ * View
+ * @returns JSX 
+ */
 export default function () {
   const actionData = useActionData<typeof action>()
 
   return (
     <main className="flex justify-center items-center h-screen relative">
-
       <Message 
         autoClose={2000}
         success={actionData?.success}
@@ -75,39 +83,19 @@ export default function () {
       />
 
       <div className="grid gap-6 px-4 w-full md:w-[400px]">
-
-        {/* Logotipo */}
         <Logo alt="IHDI Logo" />
+        <Title>Esqueceu a senha?</Title>
 
-        {/* Título */}
-        <h1 
-          className="
-            justify-self-center
-            text-3xl
-            font-bold
-            text-center
-          "
-        >
-          Esqueceu a senha?
-        </h1>
-
-        {/* Formulário */}
         <Form method="POST" key={actionData?.data.email ?? 'new'}  className="grid gap-4">
-
-          {/* Campo de email */}
           <Input 
             label="E-mail"
             type="email"
             name="email"
             defaultValue={actionData?.data.email}
           />
-
-          {/* Botão de envio do formulário */}
           <Button>Solicitar nova senha</Button>
-
         </Form>
 
-        {/* Link de esqueci minha senha */}
         <Link 
           to="/login"
           className="
@@ -118,7 +106,6 @@ export default function () {
         >
           Voltar para Login
         </Link>
-
       </div>
     </main>
   );

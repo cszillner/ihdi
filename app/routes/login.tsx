@@ -1,7 +1,7 @@
 import { type ActionArgs, redirect, json } from "@remix-run/node"
 import { Form, Link, useActionData } from "@remix-run/react"
 
-import { Button, Input, Logo, Message } from "~/components"
+import { Button, Input, Logo, Message, Title } from "~/components"
 
 // Form data type
 type FormData = {
@@ -64,77 +64,57 @@ export async function action({ request }: ActionArgs) {
 
 /**
  * View
- * @returns JXS
+ * @returns JSX
  */
 export default function Login() {
   const actionData = useActionData<typeof action>()
 
-  return <main className="flex justify-center items-center h-screen relative">
+  return (
+    <main className="flex justify-center items-center h-screen relative">
+      <Message 
+        autoClose={2000}
+        success={actionData?.success}
+        error={actionData?.error}
+        fields={[
+          {name: 'email', value: actionData?.data.email},
+          {name: 'password', value: actionData?.data.password}
+        ]}
+      />
 
-    <Message 
-      autoClose={2000}
-      success={actionData?.success}
-      error={actionData?.error}
-      fields={[
-        {name: 'email', value: actionData?.data.email},
-        {name: 'password', value: actionData?.data.password}
-      ]}
-    />
+      {/* Container com todos os elementos menos a mensagem de erro */}
+      <div className="grid gap-6 px-4 w-full md:w-[400px]">
+        <Logo alt="IHDI Logo"/>
+        <Title>Processamento de Pagamentos</Title>
 
-    {/* Container com todos os elementos menos a mensagem de erro */}
-    <div className="grid gap-6 px-4 w-full md:w-[400px]">
-      
-      {/* Logotipo */}
-      <Logo alt="IHDI Logo"/>
+        <Form method="POST" key={actionData?.data.email ?? 'new'} className="grid gap-4">
+          <Input 
+            label="E-mail"
+            type="email"
+            name="email"
+            defaultValue={actionData?.data.email}
+          />
 
-      {/* Título */}
-      <h1 
-        className="
-          justify-self-center
-          text-3xl
-          font-bold
-          text-center
-        "
-      >
-        Processamento de Pagamentos
-      </h1>
+          <Input 
+            label="Senha"
+            type="password"
+            name="password"
+            defaultValue={actionData?.data.password}
+          />
 
-      {/* Formulário */}
-      <Form method="POST" key={actionData?.data.email ?? 'new'} className="grid gap-4">
+          <Button>Entrar</Button>
+        </Form>
 
-        {/* Campo de email */}
-        <Input 
-          label="E-mail"
-          type="email"
-          name="email"
-          defaultValue={actionData?.data.email}
-        />
-
-        {/* Campo de senha */}
-        <Input 
-          label="Senha"
-          type="password"
-          name="password"
-          defaultValue={actionData?.data.password}
-        />
-
-        {/* Botão de envio do formulário */}
-        <Button>Entrar</Button>
-
-      </Form>
-
-      {/* Link de esqueci minha senha */}
-      <Link 
-        to="/esqueci-senha"
-        className="
-          justify-self-center
-          text-blue-500
-          hover:underline
-        "
-      >
-        Esqueci minha senha
-      </Link>
-        
-    </div>
-  </main>
+        <Link 
+          to="/esqueci-senha"
+          className="
+            justify-self-center
+            text-blue-500
+            hover:underline
+          "
+        >
+          Esqueci minha senha
+        </Link>
+      </div>
+    </main>
+  )
 }
