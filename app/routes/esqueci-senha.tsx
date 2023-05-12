@@ -1,8 +1,7 @@
 import { Form, Link, useActionData } from '@remix-run/react';
 import { type ActionArgs, json } from "@remix-run/node"
 
-import logo from '../images/logo.svg'
-import { Button, Input, Message } from '~/components';
+import { Button, Input, Logo, Message } from '~/components';
 
 // Form data type
 type FormData = {
@@ -78,15 +77,7 @@ export default function () {
       <div className="grid gap-6 px-4 w-full md:w-[400px]">
 
         {/* Logotipo */}
-        <img 
-          src={logo} 
-          alt="IHDI Logo" 
-          className="
-            w-40
-            md:w-auto
-            justify-self-center
-          "
-        />
+        <Logo alt="IHDI Logo" />
 
         {/* Título */}
         <h1 
