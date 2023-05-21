@@ -1,4 +1,4 @@
-import { type ActionArgs, redirect, json } from "@remix-run/node"
+import { type ActionArgs, type LoaderArgs, redirect, json } from "@remix-run/node"
 import { Link, useActionData } from "@remix-run/react"
 
 import logo from '../images/logo.svg'
@@ -7,6 +7,7 @@ import { z } from "zod"
 import { makeDomainFunction } from "domain-functions"
 import { Form } from "~/form"
 import { performMutation } from "remix-forms"
+import { createServerClient } from "~/config/supabase"
 
 /**
  * Form validation schema
@@ -18,24 +19,26 @@ const schema = z.object({
 })
 
 /**
- * Login function, receives data from form and validate credentials
+ * Loader function that verify if user already login and if true redirect to logged home else load login page
+ * @param param0 
+ * @returns 
  */
-const loginMutation = makeDomainFunction(schema)(async (data) => { 
-  const { cleanMessage, email, password } = data
+export async function loader({ request }: LoaderArgs) {
+  const response = new Response();
+  const supabase = createServerClient({ request, response });
   
-  if (cleanMessage) {
-    return data
+  const {
+    data: { session }
+  } = await supabase.auth.getSession();
+
+  if (session) {
+    return redirect('/', {
+      headers: response.headers
+    });
   }
 
-  // TODO: Fazer a validação do login nesse ponto (acessar o banco de dados ou uma API)
-
-  // if user is not valid, return a error action
-  if (email !== 'email@email.com' || password !== '123456') {
-    throw 'E-mail ou senha inválidos'
-  }
-
-  return data
-})
+  return null
+};
 
 /**
  * Action Function
@@ -46,7 +49,7 @@ export async function action({ request }: ActionArgs) {
   const result = await performMutation({
     request,
     schema,
-    mutation: loginMutation
+    mutation: makeDomainFunction(schema)(async (data) => data)
   })
 
   if (!result.success) {
@@ -76,7 +79,28 @@ export async function action({ request }: ActionArgs) {
     })
   }
 
-  return redirect('/')
+  const response = new Response();
+  const supabase = createServerClient({ request, response });
+
+  const {error} = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  })
+
+  if (error) {
+    return json({
+      error: error.message,
+      success: '',
+      data: {
+        email,
+        password
+      }
+    })
+  }
+
+  return redirect('/', {
+    headers: response.headers
+  })
 };
 
 /**
