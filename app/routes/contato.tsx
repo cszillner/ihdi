@@ -1,20 +1,9 @@
-import { redirect, type LoaderArgs } from "@remix-run/node";
+import { type LoaderArgs } from "@remix-run/node";
 import { Link } from "@remix-run/react";
-import { createServerClient } from "~/config/supabase";
+import { continueIfLoggedIn } from "~/config/supabase";
 
 export async function loader({ request }: LoaderArgs) {
-  const response = new Response();
-  const supabase = createServerClient({ request, response });
-  
-  const {
-    data: { session }
-  } = await supabase.auth.getSession();
-
-  if (!session) {
-    return redirect('/login', {
-      headers: response.headers
-    });
-  }
+  await continueIfLoggedIn(request)
 
   return null
 };

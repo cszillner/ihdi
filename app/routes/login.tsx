@@ -7,7 +7,7 @@ import { z } from "zod"
 import { makeDomainFunction } from "domain-functions"
 import { Form } from "~/form"
 import { performMutation } from "remix-forms"
-import { createServerClient } from "~/config/supabase"
+import { getSupabaseServerClient, redirectToLoggedArea } from "~/config/supabase"
 
 /**
  * Form validation schema
@@ -19,25 +19,15 @@ const schema = z.object({
 })
 
 /**
- * Loader function that verify if user already login and if true redirect to logged home else load login page
+ * Loader function that verify if user already login and if true redirect to logged home 
+ * else load login page
  * @param param0 
  * @returns 
  */
-export async function loader({ request }: LoaderArgs) {
-  const response = new Response();
-  const supabase = createServerClient({ request, response });
-  
-  const {
-    data: { session }
-  } = await supabase.auth.getSession();
+export async function loader({ request, params }: LoaderArgs) {
+    await redirectToLoggedArea(request)
 
-  if (session) {
-    return redirect('/', {
-      headers: response.headers
-    });
-  }
-
-  return null
+    return null
 };
 
 /**
@@ -79,8 +69,7 @@ export async function action({ request }: ActionArgs) {
     })
   }
 
-  const response = new Response();
-  const supabase = createServerClient({ request, response });
+  const { supabase, response } = getSupabaseServerClient(request);
 
   const {error} = await supabase.auth.signInWithPassword({
     email,

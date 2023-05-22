@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react"
 import { json, redirect } from "@remix-run/node"
 import { Form, useLoaderData } from "@remix-run/react"
-import { createBrowserClient } from "~/config/supabase"
+import { getSupabaseBrowserClient } from "~/config/supabase"
 
 export const loader = () => {
   const env = {
@@ -21,7 +21,7 @@ export default function () {
 
   useEffect(() => {
     const logout = async () => {
-      const supabase = createBrowserClient(env.SUPABASE_URL, env.SUPABASE_ANON_KEY)
+      const supabase = getSupabaseBrowserClient(env.SUPABASE_URL, env.SUPABASE_ANON_KEY)
       await supabase.auth.signOut()
       formRef.current?.submit()
     }
