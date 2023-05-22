@@ -7,7 +7,7 @@ import { z } from "zod"
 import { makeDomainFunction } from "domain-functions"
 import { Form } from "~/form"
 import { performMutation } from "remix-forms"
-import { getSupabaseServerClient, redirectToLoggedArea } from "~/config/supabase"
+import { signinWithEmailAndPassword, redirectToLoggedArea } from "~/features/Auth"
 
 /**
  * Form validation schema
@@ -69,16 +69,13 @@ export async function action({ request }: ActionArgs) {
     })
   }
 
-  const { supabase, response } = getSupabaseServerClient(request);
-
-  const {error} = await supabase.auth.signInWithPassword({
-    email,
-    password,
+  const { response, result: signinResult } = await signinWithEmailAndPassword({ 
+    req: request, credentials: { email, password }
   })
 
-  if (error) {
+  if (signinResult.error) {
     return json({
-      error: error.message,
+      error: signinResult.error,
       success: '',
       data: {
         email,

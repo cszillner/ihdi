@@ -1,6 +1,6 @@
 import { type LoaderArgs } from "@remix-run/node";
 import { Link } from "@remix-run/react";
-import { continueIfLoggedIn } from "~/config/supabase";
+import { continueIfLoggedIn } from "~/features/Auth";
 
 export async function loader({ request }: LoaderArgs) {
   await continueIfLoggedIn(request)

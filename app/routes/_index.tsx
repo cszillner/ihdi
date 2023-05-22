@@ -1,7 +1,6 @@
-import { type V2_MetaFunction } from "@remix-run/node";
-import type { LoaderArgs } from "@remix-run/node"
 import { Link } from "@remix-run/react";
-import { continueIfLoggedIn } from "~/config/supabase";
+import { type V2_MetaFunction, type LoaderArgs } from "@remix-run/node";
+import { continueIfLoggedIn } from "~/features/Auth";
 
 export async function loader({ request }: LoaderArgs) {
   await continueIfLoggedIn(request)
