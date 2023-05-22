@@ -7,6 +7,8 @@ import { z } from "zod"
 import { makeDomainFunction } from "domain-functions"
 import { Form } from "~/form"
 import { performMutation } from "remix-forms"
+import { db } from "~/config/db.server"
+import bcrypt from 'bcryptjs'
 
 /**
  * Form validation schema
@@ -27,10 +29,11 @@ const loginMutation = makeDomainFunction(schema)(async (data) => {
     return data
   }
 
-  // TODO: Fazer a validação do login nesse ponto (acessar o banco de dados ou uma API)
+  const user = await db.user.findUnique({ where: {
+    email
+  }})
 
-  // if user is not valid, return a error action
-  if (email !== 'email@email.com' || password !== '123456') {
+  if (!user || !bcrypt.compareSync(password, user.password)) {
     throw 'E-mail ou senha inválidos'
   }
 
