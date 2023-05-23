@@ -7,6 +7,7 @@ import { z } from "zod"
 import { makeDomainFunction } from "domain-functions"
 import { Form } from "~/form"
 import { performMutation } from "remix-forms"
+import { login } from "~/features/Auth"
 
 /**
  * Form validation schema
@@ -28,12 +29,11 @@ const loginMutation = makeDomainFunction(schema)(async (data) => {
   }
 
   // TODO: Fazer a validação do login nesse ponto (acessar o banco de dados ou uma API)
-
-  // if user is not valid, return a error action
-  if (email !== 'email@email.com' || password !== '123456') {
-    throw 'E-mail ou senha inválidos'
-  }
-
+  await login({
+    email,
+    password
+  })
+  
   return data
 })
 
