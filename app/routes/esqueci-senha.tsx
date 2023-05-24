@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { makeDomainFunction } from 'domain-functions';
 import { performMutation } from 'remix-forms';
 import { Form } from '~/form';
+import { getUserByEmail } from '~/features/Auth';
 
 /**
  * Form validation schema
@@ -30,11 +31,7 @@ const sendRequestPasswordMutation = makeDomainFunction(schema)(async (data) => {
   }
 
   // TODO: validar se o email informado é um email cadastrado (acessar o banco de dados ou uma API)
-
-  // if e-mail is not valid, return a error action
-  if (email !== 'email@email.com') {
-    throw 'E-mail não cadastrado. Favor entrar em contato com o Administrador.'
-  }
+  await getUserByEmail(email)
 
   // TODO fazer o envio da solicitação
 

@@ -14,6 +14,14 @@ const seed = async () => {
     }
   })
 
+  await db.user.create({
+    data: {
+      name: 'Ricardo Ruiz',
+      email: 'ricardo.almendro.ruiz@gmail.com',
+      password: await bcrypt.hash('123456', 10),
+    }
+  })
+
 }
 
 seed().finally(() => db.$disconnect())

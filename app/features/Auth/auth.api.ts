@@ -19,3 +19,17 @@ export async function login(params: LoginParams) {
 
   return user
 }
+
+export async function getUserByEmail(email: string) {
+  const user = await db.user.findUnique({
+    where: {
+      email: email
+    }
+  })
+
+  if (!user) {
+    throw 'E-mail não cadastrado'
+  }
+
+  return user
+}
