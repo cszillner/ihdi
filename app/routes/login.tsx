@@ -1,4 +1,4 @@
-import { type ActionArgs, redirect, json } from "@remix-run/node"
+import { type ActionArgs, json } from "@remix-run/node"
 import { Link, useActionData } from "@remix-run/react"
 
 import logo from '../images/logo.svg'
@@ -8,6 +8,7 @@ import { makeDomainFunction } from "domain-functions"
 import { Form } from "~/form"
 import { performMutation } from "remix-forms"
 import { login } from "~/features/Auth"
+import { createSession } from "~/session.server"
 
 /**
  * Form validation schema
@@ -25,16 +26,19 @@ const loginMutation = makeDomainFunction(schema)(async (data) => {
   const { cleanMessage, email, password } = data
   
   if (cleanMessage) {
-    return data
+    return { ...data, id: null }
   }
 
   // TODO: Fazer a validação do login nesse ponto (acessar o banco de dados ou uma API)
-  await login({
+  const user = await login({
     email,
     password
   })
   
-  return data
+  return {
+    ...data,
+    id: user.id
+  }
 })
 
 /**
@@ -76,7 +80,8 @@ export async function action({ request }: ActionArgs) {
     })
   }
 
-  return redirect('/')
+  // Create new session
+  return createSession(request, String(result.data.id))
 };
 
 /**
