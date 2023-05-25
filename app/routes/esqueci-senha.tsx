@@ -1,4 +1,4 @@
-import { Link, useActionData } from '@remix-run/react';
+import { Link, useActionData, useNavigation } from '@remix-run/react';
 import { type ActionArgs, json } from "@remix-run/node"
 
 import logo from '../images/logo.svg'
@@ -8,6 +8,7 @@ import { makeDomainFunction } from 'domain-functions';
 import { performMutation } from 'remix-forms';
 import { Form } from '~/form';
 import { getUserByEmail } from '~/features/Auth';
+import { EMAIL_TEMPLATE, sendEmail } from '~/features/Email';
 
 /**
  * Form validation schema
@@ -27,16 +28,44 @@ const sendRequestPasswordMutation = makeDomainFunction(schema)(async (data) => {
   const { cleanMessage, email } = data
   
   if (cleanMessage) {
-    return data
+    return { ...data, name: '' }
   }
 
-  // TODO: validar se o email informado é um email cadastrado (acessar o banco de dados ou uma API)
-  await getUserByEmail(email)
+  const user = await getUserByEmail(email)
 
-  // TODO fazer o envio da solicitação
-
-  return data
+  return {
+    ...data,
+    name: user.name
+  }
 })
+
+/**
+ * Send Change Password E-mail
+ * @param name 
+ * @param email 
+ * @returns Success/Error view object
+ */
+const sendChangePasswordEmail = async (name: string, email: string) => {
+  try {
+    await sendEmail({ name, email, template: EMAIL_TEMPLATE.FORGOT_PASSWORD })
+    
+    return json({
+      error: '',
+      success: 'E-mail com link para troca de senha enviada com sucesso',
+      data: {
+        email
+      }
+    })
+  } catch(error) {
+    return json({
+      error: 'Erro no envio do e-mail de solicitação de senha',
+      success: '',
+      data: {
+        email
+      }
+    })
+  }
+}
 
 /**
  * Action
@@ -63,8 +92,8 @@ export async function action({ request }: ActionArgs) {
     })
   }
 
-  const { cleanMessage, email } = result.data
-
+  const { cleanMessage, email, name } = result.data
+  
   if (cleanMessage) {
     return json({
       error: '',
@@ -75,17 +104,12 @@ export async function action({ request }: ActionArgs) {
     })
   }
 
-  return json({
-    error: '',
-    success: 'Senha provisória enviada para o seu e-mail',
-    data: {
-      email
-    }
-  })
+  return sendChangePasswordEmail(name, email)
 };
 
 export default function () {
   const actionData = useActionData<typeof action>()
+  const navigation = useNavigation()
 
   return (
     <main className="flex justify-center items-center h-screen relative">
@@ -140,6 +164,7 @@ export default function () {
               </Field>
 
               <button 
+                disabled={navigation.state === 'submitting' || navigation.state === 'loading'}
                 className="
                   px-4
                   py-2
@@ -153,12 +178,14 @@ export default function () {
                   bg-blue-500
                   hover:bg-blue-600
                   active:bg-blue-700
+                  disabled:opacity-50
+                  disabled:pointer-events-none
                   focus:border-blue-700
                   transition-all
                   duration-300
                 "
               >
-                Solicitar nova senha
+                {navigation.state === 'submitting' ? 'Enviando...' : 'Solicitar nova senha'}
               </button>
             </>
           )}
