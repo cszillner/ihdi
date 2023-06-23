@@ -1,11 +1,11 @@
-import { useRef } from "react";
 import { type ActionArgs, redirect, json } from "@remix-run/node";
 import { Form, useActionData } from "@remix-run/react";
+import { Message } from "~/components";
 
 import logo from "../images/logo.svg";
 
 type FormData = {
-  cleanError: string;
+  clearMessage: string;
   email: string;
   password: string;
 };
@@ -14,7 +14,7 @@ export async function action({ request }: ActionArgs) {
   const formData = await request.formData();
   const data = Object.fromEntries(formData) as FormData;
 
-  if (data.cleanError) {
+  if (data.clearMessage) {
     return json({
       success: "",
       error: "",
@@ -53,72 +53,19 @@ export async function action({ request }: ActionArgs) {
 }
 
 export default function Login() {
-  const clearErrorRef = useRef<HTMLButtonElement | null>(null);
   const actionData = useActionData<typeof action>();
 
   return (
     <main className="flex justify-center items-center h-screen relative">
-      <Form method="POST">
-        <div
-          className={`
-            fixed
-            flex
-            justify-between
-            items-baseline
-            bg-red-300
-            w-full
-            left-0
-            p-2
-            md:p-3
-            border-t-2
-            border-red-600
-            text-red-800
-            font-bold
-            text-md
-            md:text-lg
-            transition-all
-            duration-300
-            ease-in-out
-            ${
-              actionData?.error
-                ? "bottom-0 visible opacity-100"
-                : "-bottom-10 invisible opacity-0"
-            }
-        `}
-        >
-          <span className="inline-block text-center">{actionData?.error}</span>
-
-          <button
-            ref={clearErrorRef}
-            name="cleanError"
-            value="true"
-            className="
-              self-start
-              flex
-              justify-center
-              items-center
-              w-6
-              h-6
-              p-1
-              rounded-full
-              hover:bg-red-900
-              hover:text-red-300
-            "
-          >
-            X
-          </button>
-          <input
-            type="hidden"
-            name="email"
-            defaultValue={actionData?.data.email}
-          />
-          <input
-            type="hidden"
-            name="password"
-            defaultValue={actionData?.data.password}
-          />
-        </div>
-      </Form>
+      <Message
+        success={actionData?.success}
+        error={actionData?.error}
+        fields={[
+          { name: "email", value: actionData?.data.email },
+          { name: "password", value: actionData?.data.password },
+        ]}
+        autoClose={2000}
+      />
 
       <div className="grid gap-6 px-4">
         <img
